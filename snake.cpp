@@ -1,6 +1,10 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#if defined(PLATFORM_WEB)
+#include <emscripten/emscripten.h>
+#endif
+
 #define GRID_SQUARE_SZ 20
 #define GRID_W 65
 #define GRID_H 49
