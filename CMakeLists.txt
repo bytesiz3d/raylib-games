@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(raylib-games LANGUAGES C CXX)
 
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 if (MSVC)
 	add_compile_options(/ZI)
@@ -20,5 +21,5 @@ endif()
 
 link_libraries(raylib raygui)
 
-add_executable(pong pong.cpp)
+add_executable(pong pong.c)
 add_executable(snake snake.cpp)
