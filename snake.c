@@ -11,13 +11,16 @@
 #define SNAKE_MAX (GRID_W * GRID_H)
 #define SNAKE_SPEED 10.f
 
-struct Grid_Cell
+typedef struct Grid_Cell
 {
 	int x, y;
+} Grid_Cell;
 
-	bool
-	operator==(const Grid_Cell& other) const = default;
-};
+bool
+CellEqual(Grid_Cell a, Grid_Cell b)
+{
+	return a.x == b.x && a.y == b.y;
+}
 
 bool
 CellInside(Grid_Cell cell)
@@ -51,17 +54,17 @@ float time_of_last_update;
 Grid_Cell
 RandomVacantCell()
 {
-	Grid_Cell cell{};
+	Grid_Cell cell = {0};
 
 	for (int ITERATION_LIMIT = 0; ITERATION_LIMIT < GRID_W * GRID_H; ITERATION_LIMIT++)
 	{
-		cell = {GetRandomValue(0, GRID_W - 1), GetRandomValue(0, GRID_H - 1)};
+		cell = (Grid_Cell){GetRandomValue(0, GRID_W - 1), GetRandomValue(0, GRID_H - 1)};
 
 		bool hit_snake_body = false;
 		int i = snake_tail;
 		do
 		{
-			if (snake[i] == apple_pos)
+			if (CellEqual(snake[i], apple_pos))
 			{
 				hit_snake_body = true;
 				break;
@@ -79,9 +82,9 @@ InitGame()
 {
 	apple_pos = RandomVacantCell();
 
-	snake[0] = {GRID_W / 2, GRID_H / 2};
-	snake[1] = {snake[0].x + 1, snake[0].y};
-	snake[2] = {snake[1].x + 1, snake[1].y};
+	snake[0] = (Grid_Cell){GRID_W / 2, GRID_H / 2};
+	snake[1] = (Grid_Cell){snake[0].x + 1, snake[0].y};
+	snake[2] = (Grid_Cell){snake[1].x + 1, snake[1].y};
 	snake_tail = 0;
 	snake_head = 2;
 	snake_count = 3;
@@ -138,7 +141,7 @@ UpdateDrawFrame(void)
 			snake[snake_head] = head_new;
 		}
 
-		if (snake[snake_head] == apple_pos)
+		if (CellEqual(snake[snake_head], apple_pos))
 		{
 			int snake_tail_new = (snake_tail - 1 + SNAKE_MAX) % SNAKE_MAX;
 			snake[snake_tail_new] = snake[snake_tail];
@@ -156,7 +159,7 @@ UpdateDrawFrame(void)
 		{
 			for (int i = snake_tail; i != snake_head; i = SNAKE_INC(i))
 			{
-				if (snake[i] == snake[snake_head])
+				if (CellEqual(snake[i], snake[snake_head]))
 				{
 					snake_state = SNAKE_DEAD;
 					break;

@@ -22,4 +22,4 @@ endif()
 link_libraries(raylib raygui)
 
 add_executable(pong pong.c)
-add_executable(snake snake.cpp)
+add_executable(snake snake.c)
