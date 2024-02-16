@@ -98,11 +98,11 @@ func (g SnakeGame) Draw() {
 	}
 
 	for _, cell := range g.snake {
-		rl.DrawRectangleRec(CellScreenRectangle(cell), rl.Lime)
+		rl.DrawRectangleRec(CellScreenRec(cell), rl.Lime)
 	}
-	rl.DrawRectangleRec(CellScreenRectangle(g.snake[g.Head()]), rl.Green)
+	rl.DrawRectangleRec(CellScreenRec(g.snake[g.Head()]), rl.Green)
 
-	rl.DrawRectangleRec(CellScreenRectangle(g.apple), rl.Red)
+	rl.DrawRectangleRec(CellScreenRec(g.apple), rl.Red)
 }
 
 func (g SnakeGame) RandomVacantCell() (cell rl.Vector2) {
@@ -161,7 +161,7 @@ func CellOutOfBounds(self rl.Vector2) bool {
 	return self.X < 0 || self.X >= GRID_W || self.Y < 0 || self.Y >= GRID_H
 }
 
-func CellScreenRectangle(self rl.Vector2) rl.Rectangle {
+func CellScreenRec(self rl.Vector2) rl.Rectangle {
 	return rl.Rectangle{
 		X:      self.X * GRID_SQUARE_SZ,
 		Y:      self.Y * GRID_SQUARE_SZ,

@@ -19,6 +19,12 @@ CellOutOfBounds(Vector2 cell)
 		   cell.y < 0 || cell.y >= GRID_H;
 }
 
+Rectangle
+CellScreenRec(Vector2 cell)
+{
+	return (Rectangle){cell.x * GRID_SQUARE_SZ, cell.y * GRID_SQUARE_SZ, GRID_SQUARE_SZ, GRID_SQUARE_SZ};
+}
+
 typedef enum Direction
 {
 	SNAKE_LEFT = KEY_LEFT,
@@ -36,17 +42,16 @@ typedef struct SnakeGame
 	Vector2 apple;
 	float time_of_last_update;
 } SnakeGame;
-
-SnakeGame g = {0};
+SnakeGame gGame = {0};
 
 size_t
-SnakeHead()
+SnakeHead(SnakeGame *g)
 {
-	return g.snake_count - 1;
+	return g->snake_count - 1;
 }
 
 Vector2
-RandomVacantCell()
+RandomVacantCell(SnakeGame *g)
 {
 	Vector2 cell = {0};
 	for (int ITERATION_LIMIT = 0; ITERATION_LIMIT < GRID_W * GRID_H; ITERATION_LIMIT++)
@@ -54,9 +59,9 @@ RandomVacantCell()
 		cell = (Vector2){GetRandomValue(0, GRID_W - 1), GetRandomValue(0, GRID_H - 1)};
 
 		bool hit_snake_body = false;
-		for (int i = 0; i < g.snake_count; ++i)
+		for (int i = 0; i < g->snake_count; ++i)
 		{
-			if (Vector2Equals(g.snake[i], cell))
+			if (Vector2Equals(g->snake[i], cell))
 			{
 				hit_snake_body = true;
 				break;
@@ -69,25 +74,25 @@ RandomVacantCell()
 }
 
 void
-InitGame()
+InitGame(SnakeGame *g)
 {
-	g.snake[0] = (Vector2){GRID_W / 2, GRID_H / 2};
-	g.snake[1] = (Vector2){GRID_W / 2 + 1, GRID_H / 2};
-	g.snake[2] = (Vector2){GRID_W / 2 + 2, GRID_H / 2};
-	g.snake_count = 3;
+	g->snake[0] = (Vector2){GRID_W / 2, GRID_H / 2};
+	g->snake[1] = (Vector2){GRID_W / 2 + 1, GRID_H / 2};
+	g->snake[2] = (Vector2){GRID_W / 2 + 2, GRID_H / 2};
+	g->snake_count = 3;
 
-	g.snake_dir = SNAKE_RIGHT;
-	g.snake_is_dead = false;
-	g.time_of_last_update = GetTime();
+	g->snake_dir = SNAKE_RIGHT;
+	g->snake_is_dead = false;
+	g->time_of_last_update = GetTime();
 
-	g.apple = RandomVacantCell();
+	g->apple = RandomVacantCell(g);
 }
 
 void
-UpdateHead()
+UpdateHead(SnakeGame *g)
 {
-	Vector2 head_new = g.snake[SnakeHead()];
-	switch (g.snake_dir)
+	Vector2 head_new = g->snake[SnakeHead(g)];
+	switch (g->snake_dir)
 	{
 	case SNAKE_LEFT: head_new.x -= 1; break;
 	case SNAKE_RIGHT: head_new.x += 1; break;
@@ -97,37 +102,37 @@ UpdateHead()
 
 	if (CellOutOfBounds(head_new))
 	{
-		g.snake_is_dead = true;
+		g->snake_is_dead = true;
 		return;
 	}
 
-	for (int i = 1; i < SnakeHead(); ++i)
+	for (int i = 1; i < SnakeHead(g); ++i)
 	{
-		if (Vector2Equals(head_new, g.snake[i]))
+		if (Vector2Equals(head_new, g->snake[i]))
 		{
-			g.snake_is_dead = true;
+			g->snake_is_dead = true;
 			return;
 		}
 	}
 
-	memcpy(g.snake, g.snake + 1, SnakeHead() * sizeof(g.snake[0]));
-	g.snake[SnakeHead()] = head_new;
+	memcpy(g->snake, g->snake + 1, SnakeHead(g) * sizeof(g->snake[0]));
+	g->snake[SnakeHead(g)] = head_new;
 
-	if (Vector2Equals(head_new, g.apple))
+	if (Vector2Equals(head_new, g->apple))
 	{
-		g.snake_count++;
-		memcpy(g.snake + 1, g.snake, SnakeHead() * sizeof(g.snake[0]));
-		g.apple = RandomVacantCell();
+		g->snake_count++;
+		memcpy(g->snake + 1, g->snake, SnakeHead(g) * sizeof(g->snake[0]));
+		g->apple = RandomVacantCell(g);
 	}
 }
 
 void
-Update()
+Update(SnakeGame *g)
 {
-	if (g.snake_is_dead == true)
+	if (g->snake_is_dead == true)
 	{
 		if (IsKeyPressed(KEY_SPACE))
-			InitGame();
+			InitGame(g);
 		return;
 	}
 
@@ -135,40 +140,42 @@ Update()
 	for (int key; key = GetKeyPressed();)
 	{
 		pressed_dir = key;
-		if (pressed_dir == SNAKE_LEFT && g.snake_dir != SNAKE_RIGHT)
-			g.snake_dir = SNAKE_LEFT;
-		if (pressed_dir == SNAKE_RIGHT && g.snake_dir != SNAKE_LEFT)
-			g.snake_dir = SNAKE_RIGHT;
-		if (pressed_dir == SNAKE_UP && g.snake_dir != SNAKE_DOWN)
-			g.snake_dir = SNAKE_UP;
-		if (pressed_dir == SNAKE_DOWN && g.snake_dir != SNAKE_UP)
-			g.snake_dir = SNAKE_DOWN;
+		if (pressed_dir == SNAKE_LEFT && g->snake_dir != SNAKE_RIGHT)
+			g->snake_dir = SNAKE_LEFT;
+		if (pressed_dir == SNAKE_RIGHT && g->snake_dir != SNAKE_LEFT)
+			g->snake_dir = SNAKE_RIGHT;
+		if (pressed_dir == SNAKE_UP && g->snake_dir != SNAKE_DOWN)
+			g->snake_dir = SNAKE_UP;
+		if (pressed_dir == SNAKE_DOWN && g->snake_dir != SNAKE_UP)
+			g->snake_dir = SNAKE_DOWN;
 	}
 
 	float time_now = GetTime();
-	if ((time_now - g.time_of_last_update) * SNAKE_SPEED >= 1 || pressed_dir != 0)
+	if ((time_now - g->time_of_last_update) * SNAKE_SPEED >= 1 || pressed_dir != 0)
 	{
-		g.time_of_last_update = time_now;
-		UpdateHead();
+		g->time_of_last_update = time_now;
+		UpdateHead(g);
 	}
 }
 
 void
-Draw()
+Draw(SnakeGame *g)
 {
 	BeginDrawing();
 	{
 		ClearBackground(BLACK);
 
-		if (g.snake_is_dead == true)
-			DrawText("GAME OVER", GetScreenWidth() / 2 - 90, 40, 20, RAYWHITE);
+		if (g->snake_is_dead == true)
+		{
+			int width = MeasureText("GAME OVER", 20);
+			DrawText("GAME OVER", (GetScreenWidth() - width) / 2, 40, 20, RAYWHITE);
+		}
 
-		for (int i = 0; i < SnakeHead(); ++i)
-			DrawRectangle(g.snake[i].x * GRID_SQUARE_SZ, g.snake[i].y * GRID_SQUARE_SZ, GRID_SQUARE_SZ, GRID_SQUARE_SZ, LIME);
+		for (int i = 0; i < SnakeHead(g); ++i)
+			DrawRectangleRec(CellScreenRec(g->snake[i]), LIME);
+		DrawRectangleRec(CellScreenRec(g->snake[SnakeHead(g)]), GREEN);
 
-		DrawRectangle(g.snake[SnakeHead()].x * GRID_SQUARE_SZ, g.snake[SnakeHead()].y * GRID_SQUARE_SZ, GRID_SQUARE_SZ, GRID_SQUARE_SZ, GREEN);
-
-		DrawRectangle(g.apple.x * GRID_SQUARE_SZ, g.apple.y * GRID_SQUARE_SZ, GRID_SQUARE_SZ, GRID_SQUARE_SZ, RED);
+		DrawRectangleRec(CellScreenRec(g->apple), RED);
 	}
 	EndDrawing();
 }
@@ -176,15 +183,15 @@ Draw()
 void
 UpdateDrawFrame()
 {
-	Update();
-	Draw();
+	Update(&gGame);
+	Draw(&gGame);
 }
 
 int
 main()
 {
 	InitWindow(GRID_SQUARE_SZ * GRID_W, GRID_SQUARE_SZ * GRID_H, "Snake");
-	InitGame();
+	InitGame(&gGame);
 
 #if defined(PLATFORM_WEB)
 	emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
