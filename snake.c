@@ -55,21 +55,19 @@ Grid_Cell
 RandomVacantCell()
 {
 	Grid_Cell cell = {0};
-	bool hit_snake_body = false;
-
 	for (int ITERATION_LIMIT = 0; ITERATION_LIMIT < GRID_W * GRID_H; ITERATION_LIMIT++)
 	{
 		cell = (Grid_Cell){GetRandomValue(0, GRID_W - 1), GetRandomValue(0, GRID_H - 1)};
 
+		bool hit_snake_body = false;
 		for (int i = 0; i < snake_count; ++i)
 		{
-			if (CellEqual(snake[i], apple_pos))
+			if (CellEqual(snake[i], cell))
 			{
 				hit_snake_body = true;
 				break;
 			}
 		}
-
 		if (hit_snake_body == false)
 			return cell;
 	}
